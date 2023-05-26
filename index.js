@@ -127,8 +127,6 @@ const addEmployee = async () => {
     }
 };
 
-
-//fetch roles
 const fetchRoles = () => {
     const query = 'SELECT * FROM role';
     return executeQuery(query).then((data) => data.map((role) => `${role.id} ${role.title}`));
@@ -199,85 +197,76 @@ const viewRoles = () => {
     });
 };
 
-//ADD employee roles
-const addRole = () => {
-    connection.query('SELECT * FROM department', (error, data) => {
-        if (error) {
-            console.log(error);
-        } else {
-            const allDepartments = data.map((department) => `${department.id}-${department.name}`);
-            inquirer
-                .prompt([
-                    {
-                        type: 'input',
-                        name: 'role',
-                        message: 'What is the name of the role?',
-                    },
-                    {
-                        type: 'input',
-                        name: 'salary',
-                        message: 'What is the salary of the role?',
-                    },
-                    {
-                        type: 'list',
-                        name: 'department',
-                        message: 'Which department does the role belong to?',
-                        choices: allDepartments,
-                    },
-                ])
-                .then((response) => {
-                    const [departmentId, departmentName] = response.department.split('-');
-                    const query = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);`;
-                    connection.query(query, [response.role, response.salary, departmentId], (error, data) => {
-                        if (error) {
-                            console.log(error);
-                        } else {
-                            console.log(`Added ${response.role} to the database`);
-                            menuPrompt();
-                        }
-                    });
-                });
-        }
-    });
+// ADD employee role
+const addRole = async () => {
+    try {
+        const departments = await query('SELECT * FROM department');
+        const allDepartments = departments.map((department) => `${department.id}-${department.name}`);
+
+        const response = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'role',
+                message: 'What is the name of the role?',
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'What is the salary of the role?',
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Which department does the role belong to?',
+                choices: allDepartments,
+            },
+        ]);
+
+        const [departmentId, departmentName] = response.department.split('-');
+        const query = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);`;
+        await executeQuery(query, [response.role, response.salary, departmentId]);
+
+        console.log(`Added ${response.role} to the database`);
+        menuPrompt();
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 
-//VIEW Departments
-const viewDepartments = () => {
-    const query = `SELECT department.id, department.name AS department FROM department`;
 
-    connection.query(query, (error, data) => {
-        if (error) {
-            console.log(error);
-        } else {
-            console.table(data);
-            menuPrompt();
-        }
-    });
+// VIEW departments
+const viewDepartments = async () => {
+    try {
+        const query = `SELECT department.id, department.name AS department FROM department`;
+        const data = await executeQuery(query);
+        console.table(data);
+        menuPrompt();
+    } catch (error) {
+        console.log(error);
+    }
 };
 
-
-//ADD department
-const addDepartment = () => {
-    inquirer
-        .prompt([
+// ADD department
+const addDepartment = async () => {
+    try {
+        const response = await inquirer.prompt([
             {
                 type: 'input',
                 name: 'department',
                 message: 'What is the name of the department?',
             },
-        ])
-        .then((response) => {
-            const query = `INSERT INTO department (name) VALUES (?);`;
-            connection.query(query, [response.department], (error, data) => {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log(`Added ${response.department} to the database`);
-                    menuPrompt();
-                }
-            });
-        });
+        ]);
+
+        const query = `INSERT INTO department (name) VALUES (?);`;
+        await executeQuery(query, [response.department]);
+
+        console.log(`Added ${response.department} to the database`);
+        menuPrompt();
+    } catch (error) {
+        console.log(error);
+    }
 };
+
 
 menuPrompt();
