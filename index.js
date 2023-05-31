@@ -7,7 +7,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: '3306',
     user: 'root',
-    password: 'rootroot',
+    password: '********',
     database: 'employee_db',
 });
 
@@ -64,7 +64,8 @@ const handleMenuChoice = (response) => {
 
 //VIEW employees function
 const viewEmployees = () => {
-    const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
+    const query = `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name, 
+    CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
     LEFT JOIN role ON role.id = employee.role_id
     JOIN department ON department.id = role.department_id
     LEFT JOIN employee AS manager ON manager.id = employee.manager_id
@@ -81,7 +82,7 @@ const viewEmployees = () => {
 };
 
 
-//ADD an employee function
+//ADD an employee
 const addEmployee = async () => {
     try {
         const [allRoles, allEmployees] = await Promise.all([fetchRoles(), fetchEmployees()]);
@@ -149,7 +150,7 @@ const executeQuery = (sql, params = []) => {
     });
 };
 
-//UPDATE role
+//UPDATE employee role
 const updateRole = async () => {
     try {
         const [roles, employees] = await Promise.all([fetchRoles(), fetchEmployees()]);
